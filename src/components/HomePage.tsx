@@ -12,8 +12,12 @@ export default function HomePage() {
     <div className="relative min-h-screen">
       {/* Main Content */}
       <main className="pb-20">
-        {activeTab === 'bounty' && <BountyBook />}
-        {activeTab === 'manage' && <ManageAnimes />}
+        <div hidden={activeTab !== 'bounty'}>
+          <BountyBook />
+        </div>
+        <div hidden={activeTab !== 'manage'}>
+          <ManageAnimes />
+        </div>
       </main>
 
       {/* Bottom Navigation */}

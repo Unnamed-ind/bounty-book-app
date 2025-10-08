@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { PUT } from '@/app/api/animes/[id]/route';
 
 interface Anime {
   id: string;
@@ -90,31 +91,37 @@ export default function BountyBook() {
     setCurrentPage(1);
   };
 
-  const handleAnimeClick = async (animeId: string, currentStatus: string) => {
-    let newStatus: string;
-
-    if (currentStatus === 'active') {
+  const handleAnimeClick = async (animeId: string, currentStatus: 'active' | 'completed' | 'dead') => {
+    let newStatus: 'active' | 'completed' | 'dead';
+    if (currentStatus === 'active'){
       newStatus = 'completed';
-    } else if (currentStatus === 'completed') {
-      newStatus = 'dead';
+    } else if (currentStatus === 'completed'){
+      newStatus='dead';
     } else {
       newStatus = 'active';
     }
-
-    try {
+    setAnimes(currentAnimes => 
+      currentAnimes.map(anime =>
+        anime.id === animeId ? { ...anime, status: newStatus } : anime
+      )
+    );
+    try{
       const response = await fetch(`/api/animes/${animeId}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus }),
+        headers: {'Content-Type': 'application/json' },
+        body: JSON.stringify({status: newStatus}),
       });
-
-      if (response.ok) {
-        await fetchAnimes(currentPage);
+      if (!response.ok){
+        console.error('Failed to update anime status on server');
+        throw new Error('Server update failed');
       }
-    } catch (error) {
-      console.error('Failed to update anime status:', error);
+    } catch (error){
+      console.error('Failed to update anime status', error);
+      setAnimes(currentAnimes =>
+        currentAnimes.map(anime =>
+          anime.id === animeId ? { ...anime, status: currentStatus}: anime
+        )
+      );
     }
   };
 
